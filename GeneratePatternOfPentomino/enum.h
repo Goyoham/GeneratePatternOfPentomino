@@ -17,3 +17,10 @@ enum EBLOCK_TYPE
 	eBlockType_Z,
 	eBlockType_End,
 };
+
+enum
+{
+	eFlip = 2,
+	eRotate = 4,
+};
+

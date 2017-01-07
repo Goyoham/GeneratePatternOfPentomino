@@ -1,5 +1,8 @@
 #pragma once
+#include <iostream>
+#include <algorithm>
 #include <vector>
+#include "Utils.h"
 
 class KBoard
 {
@@ -9,21 +12,49 @@ public:
 		this->width = width_;
 		this->height = height_;
 		this->board.resize(this->width * this->height);
+		std::fill(this->board.begin(), this->board.end(), -1);
 	}
 
-	int GetIndex(int x, int y)
+	int GetIndex(int y, int x) const
 	{
-		return y * width + x;
+		int index = y * width + x;
+		if (index < 0 || index >= (int)board.size())
+			return -1;
+		return index;
 	}
 
-	void SetBoard(int x, int y, int n)
+	void SetBoard(int y, int x, int n)
 	{
-		board[GetIndex(x, y)] = n;
+		int index = GetIndex(y, x);
+		if (index == -1)
+			return;
+		board[index] = n;
 	}
 
-	int GetBoard(int x, int y, int n)
+	int GetBoard(int y, int x) const
 	{
-		return board[GetIndex(x, y)];
+		int index = GetIndex(y, x);
+		if (index == -1)
+			return -1;
+		return board[index];
+	}
+
+	void Print() const
+	{
+		for (int i = 0; i < (int)board.size(); ++i) {
+			std::cout << Utils::_GetStrType(static_cast<EBLOCK_TYPE>(board[i])) << " ";
+			if (i > 0 && (i + 1) % width == 0)
+				std::cout << std::endl;
+		}
+	}
+
+	bool IsCompletedBoard() const
+	{
+		for (auto n : board) {
+			if (n == -1)
+				return false;
+		}
+		return true;
 	}
 
 	int width = 0;

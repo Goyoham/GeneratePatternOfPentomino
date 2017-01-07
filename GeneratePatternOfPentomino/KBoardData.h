@@ -6,7 +6,7 @@
 struct KBlockState
 {
 	EBLOCK_TYPE blockType = eBlockType_Begin;
-	bool flip = false;
+	int flip = 0;
 	int rotate = 0;//0~3
 };
 
