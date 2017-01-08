@@ -1,7 +1,5 @@
 #pragma once
-#include <map>
-#include <set>
-#include <string>
+#include "pch.h"
 #include "KBoardData.h"
 #include "KBlockShape.h"
 
@@ -11,8 +9,10 @@ public:
 	KGenerator(int width_, int height_);
 
 	void Run();
-	void PutBlock(KBoardData& boardData_);
-	bool InsertBlock(KBoardData& boardData_, const KShape& shape_, bool bCheckOnly_);
+	void PutBlock_Type1(KBoardData& boardData_);
+	void PutBlock_Type2(KBoardData& boardData_);
+	bool InsertBlock_Type1(KBoardData& boardData_, const KShape& shape_, bool bCheckOnly_);
+	bool InsertBlock_Type2(KBoardData& boardData_, const KShape& shape_, bool bCheckOnly_);
 	void RegisterCompletedBoard(const KBoardData& boardData_);
 	void GetSerializedBoards(const KBoardData& boardData_, std::vector<std::string>& serializedBoards_);
 	void GetBoardSizeStr(const KBoardData& boardData_, std::string& strSize_);

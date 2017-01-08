@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string>
 #include "KGenerator.h"
+#include "Utils.h"
 
 void log(std::string&& str, bool nextLine = true)
 {
@@ -18,8 +19,6 @@ void main(int argn, char *argv[])
 		int height = atoi(argv[2]);
 		printf("size : %dx%d\n", width, height);
 		KGenerator kGenerator(width, height);
-		std::cout << "end." << std::endl;
-		getchar();
 	}
 	else {
 		{ KGenerator kGenerator(5, 3);  }//15
@@ -39,4 +38,6 @@ void main(int argn, char *argv[])
 		{ KGenerator kGenerator(15, 4); }//60
 		{ KGenerator kGenerator(20, 3); }//60
 	}
+	std::cout << Utils::GetDateNow() << " end." << std::endl;
+	getchar();
 }

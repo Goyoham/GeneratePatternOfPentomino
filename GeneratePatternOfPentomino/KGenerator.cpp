@@ -1,9 +1,6 @@
-#include <Windows.h>
-#include <fstream>
-#include <functional>
+
 #include "KGenerator.h"
-#include "conio.h"
-#include <ctime>
+
 
 KGenerator::KGenerator(int width_, int height_)
 {
@@ -14,12 +11,7 @@ KGenerator::KGenerator(int width_, int height_)
 	this->strSize += "x";
 	this->strSize += std::to_string(height_);
 
-	struct tm curr_tm;
-	time_t curr_time = time(NULL);
-	localtime_s(&curr_tm, &curr_time);
-	printf("(%04d-%02d-%02d %02d:%02d:%02d) %s .."
-		, curr_tm.tm_year + 1900, curr_tm.tm_mon + 1, curr_tm.tm_mday
-		, curr_tm.tm_hour, curr_tm.tm_min, curr_tm.tm_sec, strSize.c_str());
+	std::cout << Utils::GetDateNow() << " " << strSize << " .." << std::endl;
 
 	auto startTime = ::GetTickCount();
 	Run();
@@ -34,7 +26,13 @@ KGenerator::KGenerator(int width_, int height_)
 void KGenerator::Run()
 {
 	KBoardData boardData(width, height);
-	PutBlock(boardData);
+#ifdef RUN_TYPE_1
+	std::cout << "RunType : 1" << std::endl;
+	PutBlock_Type1(boardData);
+#else //RUN_TYPE_1
+	std::cout << "RunType : 2" << std::endl;
+	PutBlock_Type2(boardData);
+#endif //RUN_TYPE_1
 }
 
 /*
@@ -45,7 +43,7 @@ void KGenerator::Run()
 4. flip
 5. 다음 블럭
 */
-void KGenerator::PutBlock(KBoardData& boardData_)
+void KGenerator::PutBlock_Type1(KBoardData& boardData_)
 {
 	std::vector<KBoardData> recursiveList;
 	int boardSizeX = boardData_.board.width;
@@ -81,12 +79,15 @@ void KGenerator::PutBlock(KBoardData& boardData_)
 			continue;
 		}
 
-		if (InsertBlock(boardData_, shape, true)) {
+		if (InsertBlock_Type1(boardData_, shape, true)) {
 			auto cloneBoardData = boardData_;
 			cloneBoardData.offset.x += 1;
 			recursiveList.push_back(cloneBoardData);
 
-			InsertBlock(boardData_, shape, false);
+			InsertBlock_Type1(boardData_, shape, false);
+			// 절대 불가능한 패턴 검사
+			if (CheckImpossiblePlacement(boardData_) == false)
+				break;
 
 			boardData_.blockList += Utils::_GetStrType(boardData_.state.blockType);
 			boardData_.state.blockType = static_cast<EBLOCK_TYPE>(boardData_.state.blockType + 1);
@@ -96,11 +97,7 @@ void KGenerator::PutBlock(KBoardData& boardData_)
 			boardData_.offset.y = 0;
 
 			if (boardData_.board.IsCompletedBoard())
-				break;
-
-			// 절대 불가능한 패턴
-			if (CheckImpossiblePlacement(boardData_) == false)
-				break;
+				break;			
 		}
 		else {
 			boardData_.offset.x += 1;
@@ -115,11 +112,96 @@ void KGenerator::PutBlock(KBoardData& boardData_)
 
 	// recursive
 	for (auto& data : recursiveList) {
-		PutBlock(data);
+		PutBlock_Type1(data);
 	}
 }
 
-bool KGenerator::InsertBlock(KBoardData& boardData_, const KShape& shape_, bool bCheckOnly_)
+void KGenerator::PutBlock_Type2(KBoardData& boardData_)
+{
+	std::vector<KBoardData> recursiveList;
+	int boardSizeX = boardData_.board.width;
+	int boardSizeY = boardData_.board.height;
+
+	auto vitBlockType = boardData_.ramainedBlocks.begin();
+	for (; vitBlockType != boardData_.ramainedBlocks.end(); ++vitBlockType) {
+		if (*vitBlockType == boardData_.state.blockType)
+			break;
+	}
+
+	while (vitBlockType != boardData_.ramainedBlocks.end())
+	{
+		boardData_.state.blockType = *vitBlockType;
+		auto& shape = blockShape.GetShape(boardData_.state);
+		int shapeSizeX = shape[0].size();
+		int shapeSizeY = shape.size();
+		if (shapeSizeX + boardData_.offset.x > boardSizeX) {
+			boardData_.offset.x = 0;
+			boardData_.offset.y += 1;
+			continue;
+		}
+		else if (shapeSizeY + boardData_.offset.y > boardSizeY) {
+			boardData_.offset.x = 0;
+			boardData_.offset.y = 0;
+			boardData_.state.rotate += 1;
+
+			if (boardData_.state.rotate >= Utils::_GetMaxRotate(boardData_.state.blockType)) {
+				boardData_.state.rotate = 0;
+
+				if (Utils::_IsNoFlipBlock(boardData_.state.blockType))
+					boardData_.state.flip = eFlip;
+				else
+					boardData_.state.flip += 1;
+			}
+
+			if (boardData_.state.flip >= eFlip) {
+				boardData_.state.flip = 0;
+				//boardData_.state.blockType = static_cast<EBLOCK_TYPE>(boardData_.state.blockType + 1);
+				++vitBlockType;
+			}
+			continue;
+		}
+
+		if (InsertBlock_Type2(boardData_, shape, true)) {
+			auto cloneBoardData = boardData_;
+			cloneBoardData.offset.x += 1;
+			recursiveList.push_back(cloneBoardData);
+			
+			InsertBlock_Type2(boardData_, shape, false);
+			// 절대 불가능한 패턴 검사
+			if (CheckImpossiblePlacement(boardData_) == false)
+				break;
+
+			boardData_.blockList += Utils::_GetStrType(boardData_.state.blockType);
+			//boardData_.state.blockType = static_cast<EBLOCK_TYPE>(boardData_.state.blockType + 1);
+			boardData_.ramainedBlocks.erase(vitBlockType);
+			vitBlockType = boardData_.ramainedBlocks.begin();
+			boardData_.state.flip = 0;
+			boardData_.state.rotate = 0;
+			boardData_.offset.x = 0;
+			boardData_.offset.y = 0;
+
+			if (boardData_.board.IsCompletedBoard2())
+				break;
+		}
+		else {
+			boardData_.offset.x += 1;
+		}
+	}
+
+	if (boardData_.board.IsCompletedBoard()) {
+		//_PrintBoard(boardData_);
+		//setBlockList.insert(boardData_.blockList);
+		std::sort(boardData_.blockList.begin(), boardData_.blockList.end());
+		RegisterCompletedBoard(boardData_);
+	}
+
+	// recursive
+	for (auto& data : recursiveList) {
+		PutBlock_Type2(data);
+	}
+}
+
+bool KGenerator::InsertBlock_Type1(KBoardData& boardData_, const KShape& shape_, bool bCheckOnly_)
 {
 	for (int y = 0; y < (int)shape_.size(); ++y) {
 		for (int x = 0; x < (int)shape_[y].size(); ++x) {
@@ -132,6 +214,35 @@ bool KGenerator::InsertBlock(KBoardData& boardData_, const KShape& shape_, bool 
 			boardData_.board.SetBoard(y + boardData_.offset.y, x + boardData_.offset.x, boardData_.state.blockType);
 		}
 	}
+	return true;
+}
+
+bool KGenerator::InsertBlock_Type2(KBoardData& boardData_, const KShape& shape_, bool bCheckOnly_)
+{
+	bool bFillingNext = false;
+	for (int y = 0; y < (int)shape_.size(); ++y) {
+		for (int x = 0; x < (int)shape_[y].size(); ++x) {
+			if (shape_[y][x] == 0)
+				continue;
+			if (boardData_.board.GetBoard(y + boardData_.offset.y, x + boardData_.offset.x) != -1)
+				return false;
+
+			if (boardData_.board.IsFillingNextIndex(y + boardData_.offset.y, x + boardData_.offset.x))
+				bFillingNext = true;
+			
+			if (bCheckOnly_)
+				continue;
+			boardData_.board.SetBoard(y + boardData_.offset.y, x + boardData_.offset.x, boardData_.state.blockType);
+		}
+	}
+
+	if (bFillingNext == false)
+		return false;
+
+	if (bCheckOnly_ == false) {
+		boardData_.board.SetNextIndexToFill();
+	}
+
 	return true;
 }
 

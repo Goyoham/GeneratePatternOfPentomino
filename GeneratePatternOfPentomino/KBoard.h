@@ -1,8 +1,5 @@
 #pragma once
-#include <iostream>
-#include <algorithm>
-#include <vector>
-#include "Utils.h"
+#include "pch.h"
 
 class KBoard
 {
@@ -57,7 +54,30 @@ public:
 		return true;
 	}
 
+	bool IsCompletedBoard2() const
+	{
+		return nextIndexToFill == (int)board.size();
+	}
+
+	bool IsFillingNextIndex(int y, int x) const
+	{
+		return GetIndex(y, x) == nextIndexToFill;
+	}
+
+	void SetNextIndexToFill()
+	{
+		for (int i = 0; i < (int)board.size(); ++i) {
+			if (board[i] == -1) {
+				nextIndexToFill = i;
+				return;
+			}
+		}
+		nextIndexToFill = (int)board.size();
+	}
+
 	int width = 0;
 	int height = 0;
 	std::vector<int> board;
+	// type2
+	int nextIndexToFill = 0;
 };

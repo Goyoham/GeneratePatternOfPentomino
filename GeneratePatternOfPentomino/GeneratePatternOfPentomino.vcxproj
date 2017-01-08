@@ -78,14 +78,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="KBlockShape.cpp" />
     <ClCompile Include="KGenerator.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="enum.h" />
+    <ClInclude Include="KBlockShape.h" />
     <ClInclude Include="KBoard.h" />
     <ClInclude Include="KBoardData.h" />
     <ClInclude Include="KGenerator.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

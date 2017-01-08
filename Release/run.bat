@@ -1,0 +1,1 @@
+GeneratePatternOfPentomino.exe 7 5
