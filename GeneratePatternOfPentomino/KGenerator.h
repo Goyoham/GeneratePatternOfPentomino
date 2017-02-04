@@ -17,6 +17,7 @@ public:
 	void GetSerializedBoards(const KBoardData& boardData_, std::vector<std::string>& serializedBoards_);
 	void GetBoardSizeStr(const KBoardData& boardData_, std::string& strSize_);
 	bool CheckImpossiblePlacement(const KBoardData& boardData_);
+	bool IsNoJemPattern(const KBoardData& boardData_);
 
 private:
 	void _PrintBoard(const KBoardData& boardData_);

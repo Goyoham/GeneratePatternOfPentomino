@@ -128,8 +128,10 @@ void KGenerator::PutBlock_Type2(KBoardData& boardData_)
 			break;
 	}
 
+	bool bNoJem = false;
 	while (vitBlockType != boardData_.ramainedBlocks.end())
 	{
+		bNoJem = false;
 		boardData_.state.blockType = *vitBlockType;
 		auto& shape = blockShape.GetShape(boardData_.state);
 		int shapeSizeX = shape[0].size();
@@ -171,6 +173,12 @@ void KGenerator::PutBlock_Type2(KBoardData& boardData_)
 			if (CheckImpossiblePlacement(boardData_) == false)
 				break;
 
+			// 일자가 5칸 끝에 있는 패턴은 버린다. (노잼)
+			if (IsNoJemPattern(boardData_)) {
+				bNoJem = true;
+				break;
+			}
+
 			boardData_.blockList += Utils::_GetStrType(boardData_.state.blockType);
 			//boardData_.state.blockType = static_cast<EBLOCK_TYPE>(boardData_.state.blockType + 1);
 			boardData_.ramainedBlocks.erase(vitBlockType);
@@ -188,7 +196,7 @@ void KGenerator::PutBlock_Type2(KBoardData& boardData_)
 		}
 	}
 
-	if (boardData_.board.IsCompletedBoard()) {
+	if (boardData_.board.IsCompletedBoard() && !bNoJem) {
 		//_PrintBoard(boardData_);
 		//setBlockList.insert(boardData_.blockList);
 		std::sort(boardData_.blockList.begin(), boardData_.blockList.end());
@@ -345,6 +353,43 @@ bool KGenerator::CheckImpossiblePlacement(const KBoardData& boardData_)
 		}
 	}
 	return true;
+}
+
+bool KGenerator::IsNoJemPattern(const KBoardData& boardData_)
+{
+	if (boardData_.state.blockType != EBLOCK_TYPE::eBlockType_I)
+		return false;
+
+	if (boardData_.board.height == 5) {
+		if (boardData_.state.rotate == 1)
+			return false;
+
+		int xn = 0, xm = 0;
+		for (int y = 0; y < boardData_.board.height; ++y) {
+			if (boardData_.board.GetBoard(y, 0) == EBLOCK_TYPE::eBlockType_I)
+				++xn;
+			else if (boardData_.board.GetBoard(y, boardData_.board.width - 1) == EBLOCK_TYPE::eBlockType_I)
+				++xm;
+		}
+		if (xn == 5 || xm == 5)
+			return true;
+	}
+
+	if (boardData_.board.width == 5) {
+		if (boardData_.state.rotate == 0)
+			return false;
+
+		int xn = 0, xm = 0;
+		for (int x = 0; x < boardData_.board.width; ++x) {
+			if (boardData_.board.GetBoard(0, x) == EBLOCK_TYPE::eBlockType_I)
+				++xn;
+			else if (boardData_.board.GetBoard(boardData_.board.height - 1, x) == EBLOCK_TYPE::eBlockType_I)
+				++xm;
+		}
+		if (xn == 5 || xm == 5)
+			return true;
+	}
+	return false;
 }
 
 void KGenerator::_PrintBoard(const KBoardData& boardData_)
