@@ -360,10 +360,7 @@ bool KGenerator::IsNoJemPattern(const KBoardData& boardData_)
 	if (boardData_.state.blockType != EBLOCK_TYPE::eBlockType_I)
 		return false;
 
-	if (boardData_.board.height == 5) {
-		if (boardData_.state.rotate == 1)
-			return false;
-
+	if (boardData_.board.height == 5 && boardData_.state.rotate == 0) {
 		int xn = 0, xm = 0;
 		for (int y = 0; y < boardData_.board.height; ++y) {
 			if (boardData_.board.GetBoard(y, 0) == EBLOCK_TYPE::eBlockType_I)
@@ -375,10 +372,7 @@ bool KGenerator::IsNoJemPattern(const KBoardData& boardData_)
 			return true;
 	}
 
-	if (boardData_.board.width == 5) {
-		if (boardData_.state.rotate == 0)
-			return false;
-
+	if (boardData_.board.width == 5 && boardData_.state.rotate == 1) {
 		int xn = 0, xm = 0;
 		for (int x = 0; x < boardData_.board.width; ++x) {
 			if (boardData_.board.GetBoard(0, x) == EBLOCK_TYPE::eBlockType_I)
