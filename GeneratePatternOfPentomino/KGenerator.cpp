@@ -196,7 +196,7 @@ void KGenerator::PutBlock_Type2(KBoardData& boardData_)
 		}
 	}
 
-	if (boardData_.board.IsCompletedBoard() && !bNoJem) {
+	if (boardData_.board.IsCompletedBoard() && !bNoJem && !IsNoJemPattern2(boardData_)) {
 		//_PrintBoard(boardData_);
 		//setBlockList.insert(boardData_.blockList);
 		std::sort(boardData_.blockList.begin(), boardData_.blockList.end());
@@ -383,6 +383,39 @@ bool KGenerator::IsNoJemPattern(const KBoardData& boardData_)
 		if (xn == 5 || xm == 5)
 			return true;
 	}
+	return false;
+}
+
+bool KGenerator::IsNoJemPattern2(const KBoardData& boardData_)
+{
+	if (boardData_.board.width >= 6) {
+		for (int x = 2; x < boardData_.board.width - 1; ++x) {
+			bool bJem = false;
+			for (int y = 0; y < boardData_.board.height; ++y) {
+				if (boardData_.board.GetBoard(y, x) != boardData_.board.GetBoard(y, x + 1))
+					continue;
+				bJem = true;
+				break;
+			}
+			if (!bJem)
+				return true;
+		}
+	}
+
+	if (boardData_.board.height >= 6) {
+		for (int y = 2; y < boardData_.board.height - 1; ++y) {
+			bool bJem = false;
+			for (int x = 0; x < boardData_.board.width; ++x) {
+				if (boardData_.board.GetBoard(y, x) != boardData_.board.GetBoard(y+1, x))
+					continue;
+				bJem = true;
+				break;
+			}
+			if (!bJem)
+				return true;
+		}
+	}
+
 	return false;
 }
 

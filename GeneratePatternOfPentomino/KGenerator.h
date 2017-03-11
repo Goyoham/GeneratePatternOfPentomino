@@ -18,6 +18,7 @@ public:
 	void GetBoardSizeStr(const KBoardData& boardData_, std::string& strSize_);
 	bool CheckImpossiblePlacement(const KBoardData& boardData_);
 	bool IsNoJemPattern(const KBoardData& boardData_);
+	bool IsNoJemPattern2(const KBoardData& boardData_);
 
 private:
 	void _PrintBoard(const KBoardData& boardData_);
